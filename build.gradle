@@ -1,0 +1,87 @@
+group 'com.globallogic'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+apply plugin: 'idea'
+
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    groovyVersion = '2.4.7'
+    gebVersion = '1.0'
+    seleniumVersion = '3.0.1'
+    httpBuilderVersion = '0.7'
+    log4jVersion = '1.2.17'
+    aspectjVersion='1.8.0'
+    allureVersion='1.4.11'
+
+
+}
+
+defaultTasks 'clean', 'test'
+
+configurations {
+    agent
+}
+
+dependencies {
+    agent "org.aspectj:aspectjweaver:${aspectjVersion}"
+    //Groovy
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    //Spock
+    testCompile "org.gebish:geb-spock:$gebVersion"
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+
+
+
+    //HTTP
+    testCompile "org.codehaus.groovy.modules.http-builder:http-builder:$httpBuilderVersion"
+
+    //Drivers
+    testCompile "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
+    testCompile "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
+    testCompile "org.seleniumhq.selenium:selenium-ie-driver:$seleniumVersion"
+
+    //Logger
+    testCompile "log4j:log4j:$log4jVersion"
+
+    testCompile 'junit:junit:4.12'
+
+
+
+}
+
+
+task firefoxTest(type: Test) {
+    systemProperty "geb.env", "firefox"
+    //systemProperty "webdriver.gecko.driver", "drivers\\geckodriver.exe"
+    systemProperty "webdriver.firefox.marionette", "drivers\\geckodriver.exe"
+}
+
+task chromeTest(type: Test) {
+    systemProperty "geb.env", "chrome"
+    systemProperty "webdriver.chrome.driver", "drivers\\chromedriver.exe"
+}
+task ieTest(type: Test) {
+    systemProperty "geb.env", "ie"
+    systemProperty "webdriver.ie.driver", "drivers\\IEDriverServer64.exe"
+}
+task smokeTest(type: Test) {
+    systemProperty "geb.env", "chrome"
+    systemProperty "webdriver.chrome.driver", "drivers\\chromedriver.exe"
+}
+
+task generateAllureReport(type: Exec) {
+    commandLine "allure generate build/allure-results -v ${allureVersion} -o build/reports/allure"
+}
+test.finalizedBy(generateAllureReport)
+
+task openAllureReport(type: Exec) {
+    commandLine "allure report open -o build/reports/allure"
+}
+
+
