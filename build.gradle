@@ -3,6 +3,7 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'groovy'
 apply plugin: 'idea'
+apply from: 'gradle/allure.gradle'
 
 
 repositories {
@@ -21,14 +22,9 @@ ext {
 
 }
 
-defaultTasks 'clean', 'test'
-
-configurations {
-    agent
-}
 
 dependencies {
-    agent "org.aspectj:aspectjweaver:${aspectjVersion}"
+
     //Groovy
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
@@ -75,13 +71,8 @@ task smokeTest(type: Test) {
     systemProperty "webdriver.chrome.driver", "drivers\\chromedriver.exe"
 }
 
-task generateAllureReport(type: Exec) {
-    commandLine "allure generate build/allure-results -v ${allureVersion} -o build/reports/allure"
-}
-test.finalizedBy(generateAllureReport)
+test.outputs.upToDateWhen { false }
+test.finalizedBy allureReport
 
-task openAllureReport(type: Exec) {
-    commandLine "allure report open -o build/reports/allure"
-}
 
 
